@@ -1,0 +1,19 @@
+{
+  "name": "@roundsquares/contract",
+  "version": "1.0.0",
+  "description": "API types for The Last of Guss game",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "files": [
+    "dist/**/*",
+    "src/**/*"
+  ]
+}

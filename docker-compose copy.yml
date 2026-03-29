@@ -1,0 +1,48 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: guss
+      POSTGRES_PASSWORD: guss
+      POSTGRES_DB: guss
+    ports:
+      - '${POSTGRES_HOST_PORT:-5432}:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U guss -d guss']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: postgresql://guss:guss@postgres:5432/guss
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      ROUND_DURATION: ${ROUND_DURATION:-60}
+      COOLDOWN_DURATION: ${COOLDOWN_DURATION:-30}
+      PORT: 3000
+      NODE_ENV: production
+    ports:
+      - '${API_HOST_PORT:-3000}:3000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  web:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ''
+    ports:
+      - '${WEB_HOST_PORT:-8080}:80'
+    depends_on:
+      - api
+
+volumes:
+  pgdata:

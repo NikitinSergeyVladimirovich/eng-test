@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  admin
+  survivor
+  nikita
+}
+
+model User {
+  id           String   @id @default(uuid())
+  login        String   @unique
+  passwordHash String   @map("password_hash")
+  role         UserRole
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  participations RoundParticipation[]
+
+  @@map("users")
+}
+
+model Round {
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now()) @map("created_at")
+  startsAt    DateTime @map("starts_at")
+  endsAt      DateTime @map("ends_at")
+  totalPoints Int      @default(0) @map("total_points")
+
+  participations RoundParticipation[]
+
+  @@map("rounds")
+}
+
+model RoundParticipation {
+  userId  String @map("user_id")
+  roundId String @map("round_id")
+  taps    Int    @default(0)
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  round Round @relation(fields: [roundId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roundId])
+  @@map("round_participations")
+}
